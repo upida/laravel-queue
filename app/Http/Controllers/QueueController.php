@@ -2,24 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Helpers\LogHelper;
 use App\Jobs\ProcessConvert;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
-use App\Services\ConvertService;
+use Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class QueueController extends Controller
 {
-    private ConvertService $convert;
+    private $convert;
 
-    private ProcessConvert $job;
+    private $log;
 
-    public function __construct(ConvertService $convert)
+    public function __construct(LogHelper $log)
     {
-        $this->convert = $convert;
+        $this->log = $log;
+        $route_name = Route::current()->getName();
+        $this->log->log("Start : ".$route_name);
     }
     
-    public function set(Request $request)
+    public function set(Request $request): JsonResponse
     {
-        return $this->job->handle($this->convert, $request);
+        ProcessConvert::dispatch($request);
+        return response()->json(['OK']);
     }
 }

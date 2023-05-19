@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Http\Helpers\LogHelper;
 use App\Services\ConvertService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -15,20 +16,27 @@ class ProcessConvert implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    private $log;
+    private $request;
+
     /**
      * Create a new job instance.
      */
-    public function __construct()
+    public function __construct(Request $request)
     {
-        //
+        $this->request = $request->all();
+        $this->log = new LogHelper;
+        $this->log->log("Job Start : ProcessConvert");
     }
-
+    
     /**
      * Execute the job.
      */
-    public function handle(ConvertService $convert, Request $request): void
+    public function handle(): void
     {
-        $convert = new ConvertService;
-        $convert->store($request->all());
+        $request = $this->request;
+        $this->log->log("Job Handle : ProcessConvert".json_encode($request));
+        
+        (new ConvertService)->store($request);
     }
 }
